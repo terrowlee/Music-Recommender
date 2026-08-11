@@ -1,0 +1,9 @@
+# 运行时生成的个人数据（含个人口味/听歌记录，不入库）
+assets/user-profile.md
+assets/feedback-log.md
+assets/recommendation-history.md
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+*.tmp

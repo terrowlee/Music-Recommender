@@ -68,11 +68,14 @@ ncm-cli search song --keyword "关键词" --limit 10   # 搜索歌曲（返回�
 ncm-cli search all --keyword "关键词"               # 综合搜索
 ```
 
-### 红心歌单（拉取用户歌曲）
+### 红心歌单 / 听歌排行（拉取用户数据）
 
 ```bash
 ncm-cli user favorite            # ⚠️ 只返回"我喜欢的音乐"歌单对象（含 trackCount），不含歌曲列表
 ncm-cli playlist tracks --playlistId <加密ID> --limit 500 --offset 0   # 用歌单加密 ID 分页拉歌曲（limit ≤ 500）
+ncm-cli user listen-ranking      # 听歌排行（含时间信息 → 近期趋势分析的数据源）
+ncm-cli user history             # 最近播放历史（辅助交叉验证）
+ncm-cli album collected          # 收藏专辑（辅助交叉验证）
 ```
 
 ### 歌单管理
@@ -130,15 +133,16 @@ ncm-cli --help
 - 解决：写 Node 脚本，用 `child_process.execFileSync` 直接调用 `node <npm全局目录>/node_modules/@music163/ncm-cli/dist/index.js`，把 `["<加密ID>"]` 作为**单个参数**传入。
 - 正确格式就是加密 ID 的 JSON 字符串数组（与 `--help` 一致），问题在 shell 引号，不在格式。
 
-## 红心歌曲分析
+## 红心歌曲分析（多数据源）
 
-用户同意安装并登录后，可拉取红心歌单辅助建立画像：
+用户同意安装并登录后，可拉取数据辅助建立画像：
 
-1. 用 `user favorite` 拿到"我喜欢的音乐"歌单对象，再用 `playlist tracks --playlistId <加密ID> --limit 500 --offset N` **分页拉取全部**红心曲目（limit 上限 500），关注：艺人、专辑、歌曲名、红心时间；
-2. **风格判定不使用网易云的 `songTag` 标签和 BPM 数据**（不准确），改用艺人/专辑信息结合 Discogs 判定风格；
-3. 分析内容：常听风格分布、高频艺人、红心时间规律；
-4. **近期趋势**：单独看最近 20 首红心，识别最近偏好的风格变化，写入画像"近期趋势"字段（推荐时按约 40% 配额加权）；
-5. 分析结果写入 `assets/user-profile.md`，请用户确认。
+1. **红心歌单**：用 `user favorite` 拿到"我喜欢的音乐"歌单对象，再用 `playlist tracks --playlistId <加密ID> --limit 500 --offset N` **分页拉取全部**红心曲目（limit 上限 500），关注：艺人、专辑、歌曲名；
+2. **听歌排行（近期趋势的真正来源）**：`user listen-ranking` 拉取听歌排行（含时间信息），识别最近偏好变化，写入画像"近期趋势"字段（推荐时按约 40% 配额加权）。红心数据无时间戳，**不要用它推断趋势**；
+3. **其他数据源（交叉验证）**：`user history`（最近播放）、`album collected`（收藏专辑）；
+4. **风格判定不使用网易云的 `songTag` 标签和 BPM 数据**（不准确），改用艺人/专辑信息结合 Discogs 判定风格；**制作人/乐手信用从 Discogs 提取**（制作人≠艺人，禁止用艺人频次代偿制作人频次）；
+5. 分析内容：常听风格分布、高频艺人、**分支识别**（出现 1-2 次但风格独特的曲目聚类为候选分支，请用户确认，如 House/Disco/Funk、Gospel）、**BPM 甜区统计**（每分支代表曲做预估分布）、**制作人库**（Discogs 信用，出现 2-3 次即高频）、**反向排除确认**（默认候选：民谣、摇滚及其子流派、重型 EDM、流水线中文流行、Hyperpop）、品味确认问答（和弦色彩/人声质感/声场/歌词主题）；
+6. 分析结果写入 `assets/user-profile.md`，请用户确认。
 
 ## 执行纪律
 

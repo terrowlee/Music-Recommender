@@ -196,6 +196,7 @@ https://music.163.com/#/album?id=<明文ID>
 | 中文乱码 / JSON 解析报错 | Windows GBK 控制台 + UTF-8 输出冲突，见"Windows 环境注意事项"；设 OutputEncoding、strip BOM，或改用 Node 脚本直调 |
 | `playlist add` 报"songIdList参数非法" | shell 引号把 JSON 数组吃掉了，见"Windows 环境注意事项"；用 Node 脚本 execFileSync 直调 dist/index.js 传单参数 |
 | 登录超时 | 重新执行 `ncm-cli login`（或 `ncm-cli login --background`） |
+| search/playlist 等命令报"unknown command"、命令树只剩播放/登录/配置 | **登录失效**。ncm-cli 命令按登录状态动态注册：未登录时 search/playlist/user 等命令整体消失。执行 `ncm-cli login --check` 确认，未登录则 `ncm-cli login --background` 登录后命令自动恢复 |
 | 播放无声 | 检查 mpv 是否安装（`mpv --version`）；未装则按"系统要求"一节安装 |
 | 提示 API Key 未设置 | 引导用户到网易云音乐开放平台申请后执行 `ncm-cli configure` |
 | 请求总量超限 | 如实告知用户并停止，不要重试 |

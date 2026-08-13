@@ -38,16 +38,26 @@ npm install -g @music163/ncm-cli
 > ⚠️ npm 上有多个同名包，请确认安装的是 `@music163/ncm-cli`（网易云音乐官方出品），不要安装其他同名包。
 > 注意：npm 的 deprecation 警告可能让 PowerShell 报"退出码 1"，但实际已装成功，用 `ncm-cli --version` 确认即可，别被误导。
 
-### 2. 配置
+### 2. 获取 API 凭证并配置（必须把链接发给用户）
+
+ncm-cli 需要 API 凭据（App ID + Private Key）才能工作，**必须由用户本人申请**。安装完成后按以下步骤引导：
+
+1. **把开放平台链接发给用户（这一步不能省——用户不知道网址就卡住了）**：
+   - 开发者入驻/申请页：https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL
+   - 开发文档：https://developer.music.163.com/st/developer/document?docId=9504d35aa41a47c6ac9830b2dbf48f94
+2. **引导用户完成入驻**："点开链接 → 登录网易云账号 → 完成个人开发者入驻（免费）→ 创建应用 → 拿到 App ID 和 Private Key（密钥）"；
+3. 用户拿到凭据后，**用 `config set` 写入**（比交互式向导更适合 agent 引导，避免终端交互卡住）：
 
 ```bash
-ncm-cli configure
+ncm-cli config set appId <用户的AppId>
+ncm-cli config set privateKey <用户的PrivateKey>
 ```
 
-配置向导会引导设置：
-- **App ID**：从网易云音乐开放平台获取
-- **Private Key**：从网易云音乐开放平台获取
-- **播放器选择**：内置播放器（mpv）或网易云音乐 App（仅 macOS）
+4. 校验凭据已写入：`ncm-cli config list`（能看到 appId / privateKey 即成功）；
+5. 再进入下面的登录步骤。
+
+> 交互式向导 `ncm-cli configure` 也可用（含播放器选择），但需要终端交互；agent 引导时优先 `config set`。
+> ⚠️ 禁止使用他人或示例的 AppId/PrivateKey；用户填错导致 401/签名错误时，回到本步骤重新引导。
 
 ### 3. 登录
 
@@ -202,6 +212,6 @@ https://music.163.com/#/album?id=<明文ID>
 | 登录超时 | 重新执行 `ncm-cli login`（或 `ncm-cli login --background`） |
 | search/playlist 等命令报"unknown command"、命令树只剩播放/登录/配置 | **登录失效**。ncm-cli 命令按登录状态动态注册：未登录时 search/playlist/user 等命令整体消失。执行 `ncm-cli login --check` 确认，未登录则 `ncm-cli login --background` 登录后命令自动恢复 |
 | 播放无声 | 检查 mpv 是否安装（`mpv --version`）；未装则按"系统要求"一节安装 |
-| 提示 API Key 未设置 | 引导用户到网易云音乐开放平台申请后执行 `ncm-cli configure` |
+| 提示 API Key 未设置 | 把开放平台链接发给用户（https://developer.music.163.com/st/developer/apply/account?type=INDIVIDUAL），引导入驻拿到 App ID/Private Key 后执行 `ncm-cli config set appId/privateKey` |
 | 请求总量超限 | 如实告知用户并停止，不要重试 |
 | 歌曲在 App 里灰色不可播 | 海外曲目无网易云版权（visible=false 常见）；加歌成功不代表能播，建议 Spotify / Apple Music 收听 |
